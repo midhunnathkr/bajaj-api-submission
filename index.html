@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bajaj API Frontend</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use the Inter font family */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for the result blocks */
+        .result-grid-item {
+            background-color: #1a202c; /* A darker gray for the items */
+            border: 1px solid #2d3748; /* A slightly lighter border */
+            border-radius: 0.5rem;
+            padding: 1rem;
+            transition: transform 0.2s ease-in-out;
+        }
+        .result-grid-item:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-4xl mx-auto">
+        <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-2xl p-6 md:p-8">
+            
+            <!-- Header Section -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-cyan-400">Data Processor API</h1>
+                <p class="text-gray-400 mt-2">Enter a comma-separated list of characters, numbers, and symbols.</p>
+            </div>
+
+            <!-- Input Form -->
+            <form id="api-form" class="mb-8">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="text" 
+                        id="data-input"
+                        placeholder="e.g., a, 1, 334, 4, R, $"
+                        required
+                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white placeholder-gray-500 transition"
+                    >
+                    <button 
+                        type="submit"
+                        id="submit-btn"
+                        class="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold py-3 px-6 rounded-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500"
+                    >
+                        Process Data
+                    </button>
+                </div>
+            </form>
+
+            <!-- Results Section -->
+            <div id="results-container" class="hidden">
+                <div id="loading-spinner" class="text-center hidden">
+                    <svg class="animate-spin h-8 w-8 text-cyan-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-2 text-gray-400">Processing...</p>
+                </div>
+
+                <div id="error-message" class="text-center text-red-400 bg-red-900/50 border border-red-700 p-4 rounded-md hidden"></div>
+                
+                <div id="success-results" class="hidden">
+                    <!-- User Info -->
+                    <div class="mb-6 bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+                         <h2 class="text-xl font-semibold text-gray-300 mb-3">Submission Details</h2>
+                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                            <p><strong>User ID:</strong> <span id="user-id" class="text-cyan-400"></span></p>
+                            <p><strong>Email:</strong> <span id="email" class="text-cyan-400"></span></p>
+                            <p><strong>Roll No:</strong> <span id="roll-number" class="text-cyan-400"></span></p>
+                         </div>
+                    </div>
+                    
+                    <!-- Categorized Data -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="result-grid-item">
+                            <h3 class="font-semibold text-lg mb-2 text-gray-300">Even Numbers</h3>
+                            <p id="even-numbers" class="text-2xl font-bold text-green-400 break-words"></p>
+                        </div>
+                        <div class="result-grid-item">
+                            <h3 class="font-semibold text-lg mb-2 text-gray-300">Odd Numbers</h3>
+                            <p id="odd-numbers" class="text-2xl font-bold text-yellow-400 break-words"></p>
+                        </div>
+                        <div class="result-grid-item">
+                            <h3 class="font-semibold text-lg mb-2 text-gray-300">Alphabets (Uppercase)</h3>
+                            <p id="alphabets" class="text-2xl font-bold text-purple-400 break-words"></p>
+                        </div>
+                        <div class="result-grid-item">
+                            <h3 class="font-semibold text-lg mb-2 text-gray-300">Special Characters</h3>
+                            <p id="special-chars" class="text-2xl font-bold text-pink-400 break-words"></p>
+                        </div>
+                        <div class="result-grid-item">
+                            <h3 class="font-semibold text-lg mb-2 text-gray-300">Sum of Numbers</h3>
+                            <p id="sum" class="text-2xl font-bold text-orange-400"></p>
+                        </div>
+                        <div class="result-grid-item">
+                            <h3 class="font-semibold text-lg mb-2 text-gray-300">Reversed & Alternating Caps</h3>
+                            <p id="concat-string" class="text-2xl font-bold text-blue-400 break-words"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- DOM Element References ---
+        const form = document.getElementById('api-form');
+        const input = document.getElementById('data-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const errorMessage = document.getElementById('error-message');
+        const successResults = document.getElementById('success-results');
+        
+        // --- Your Live API Endpoint ---
+        const API_ENDPOINT = 'bajaj-api-submission-69evdusad-midhunnathkrs-projects.vercel.app';
+
+        // --- Event Listener for Form Submission ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default browser form submission
+
+            // 1. Prepare for API call
+            resetUI();
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            resultsContainer.classList.remove('hidden');
+            loadingSpinner.classList.remove('hidden');
+
+            // 2. Format input data
+            // Takes the string "a, 1, b" and turns it into an array ["a", "1", "b"]
+            const inputArray = input.value.split(',').map(item => item.trim()).filter(Boolean);
+
+            try {
+                // 3. Make the API call using fetch
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ data: inputArray }),
+                });
+
+                const result = await response.json();
+
+                // 4. Handle the response from the API
+                loadingSpinner.classList.add('hidden');
+
+                if (!response.ok || !result.is_success) {
+                    // Handle API errors (e.g., bad request, server error)
+                    throw new Error(result.error || `HTTP error! Status: ${response.status}`);
+                }
+                
+                // If successful, display the results
+                displayResults(result);
+                successResults.classList.remove('hidden');
+
+            } catch (error) {
+                // Handle network errors or exceptions
+                loadingSpinner.classList.add('hidden');
+                errorMessage.textContent = `An error occurred: ${error.message}`;
+                errorMessage.classList.remove('hidden');
+            } finally {
+                // 5. Re-enable the submit button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Process Data';
+            }
+        });
+
+        /**
+         * Populates the UI with the data returned from the API.
+         * @param {object} data - The JSON response from the API.
+         */
+        function displayResults(data) {
+            document.getElementById('user-id').textContent = data.user_id;
+            document.getElementById('email').textContent = data.email;
+            document.getElementById('roll-number').textContent = data.roll_number;
+            
+            // Helper to join arrays or show a placeholder
+            const formatArray = arr => arr.length > 0 ? arr.join(', ') : 'N/A';
+
+            document.getElementById('even-numbers').textContent = formatArray(data.even_numbers);
+            document.getElementById('odd-numbers').textContent = formatArray(data.odd_numbers);
+            document.getElementById('alphabets').textContent = formatArray(data.alphabets);
+            document.getElementById('special-chars').textContent = formatArray(data.special_characters);
+            document.getElementById('sum').textContent = data.sum || 'N/A';
+            document.getElementById('concat-string').textContent = data.concat_string || 'N/A';
+        }
+
+        /**
+         * Resets the UI to its initial state before a new API call.
+         */
+        function resetUI() {
+            resultsContainer.classList.add('hidden');
+            successResults.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            loadingSpinner.classList.add('hidden');
+            errorMessage.textContent = '';
+        }
+    </script>
+</body>
+</html>
