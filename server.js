@@ -99,8 +99,8 @@ app.post('/bfhl', (req, res) => {
     }
 });
 
-// Health check endpoint
-app.get('/', (req, res) => {
+// GET end endpoint
+app.get('/bfhl', (req, res) => {
     res.json({
         message: "Bajaj API is running",
         endpoint: "/bfhl",
